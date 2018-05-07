@@ -6,7 +6,7 @@ const db = require("./db");
 
 var app = express();
 let token =
-  "EAAGU3SViOvEBAEBaZAKfLWZBZAwf7Bjvl9MyK7T7pXZAzCoOs94ByIBrdoCjLqZCFZB9K4azLAAOcpTt2kU4truNcL0xaeEOokohao6gtuX1Jm3eMVYZCsxl55MGzfOYeTpnMT9qQIOajcdUSSUfb3iZAZC1oLSWol0j6XYnIYz83uAZDZD";
+  "EAAGU3SViOvEBAHwZAFThb4ZADpK2arHgBFrqCLSXs3T3yG3bpxO8PwfqfSTG3ItN1iANEzZC8XYFeOVXciELf2UZAUjqaKNRe5rD3QNlFpgZCCBLAdUDBgUE4Rk8S2WBb0AmA28gCETHWqmp2ZAfLEpBDupXVGfZBU6jdgW8ZCJDagZDZD";
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -27,13 +27,18 @@ app.get("/webhook", (req, res) => {
 });
 
 app.post("/webhook", (req, res) => {
-  let messaging_events = req.body.entry[0].messaging_events;
-  for (let i = 0; i, messaging_events.length; i++) {
-    let event = messaging_events[i];
-    let sender = event.sender.id;
-    if (event.message && event.message.text) {
-      let text = event.message.text;
-      sendText(sender, "text echo: " + text.substring(0, 100));
+  //   console.log(req.body.entry);
+  let messaging = req.body.entry[0].messaging;
+  console.log("text message: " + req.body.entry[0].messaging[0].message.text);
+  console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
+
+  console.log(JSON.stringify(req.body.entry[0].messaging[0].sender.id));
+  for (let i = 0; i < messaging.length; i++) {
+    let sender = JSON.stringify(messaging[i].sender.id);
+    if (messaging[i].message && messaging[i].message.text) {
+      let text = messaging[i].message.text;
+      //   sendText(sender, "text echo: " + text.substring(0, 100));
+      console.log("text in for cycle: " + text);
     }
   }
   res.sendStatus(200);
@@ -43,19 +48,19 @@ function sendText(sender, text) {
   let messageData = { text: text };
   request(
     {
-      url: "https://graph.facebook.com/v2.6/me/messages",
-      qs: { access_token: token },
+      url: "https://graph.facebook.com/v2.6/me/messages?access_token=" + token,
       method: "POST",
       json: {
+        messaging_type: "RESPONSE",
         recipient: { id: sender },
         message: messageData
       }
     },
     (error, response, body) => {
       if (error) {
-        console.log(error);
+        console.log("sending error");
       } else if (response.body.error) {
-        console.log(response.body.error);
+        console.log("response body error");
       }
     }
   );
