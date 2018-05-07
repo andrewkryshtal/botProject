@@ -1,12 +1,12 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { request } from "https";
+import request from "request";
 const MongoClient = require("mongodb").MongoClient;
 const db = require("./db");
 
 var app = express();
 let token =
-  "EAAGU3SViOvEBAHwZAFThb4ZADpK2arHgBFrqCLSXs3T3yG3bpxO8PwfqfSTG3ItN1iANEzZC8XYFeOVXciELf2UZAUjqaKNRe5rD3QNlFpgZCCBLAdUDBgUE4Rk8S2WBb0AmA28gCETHWqmp2ZAfLEpBDupXVGfZBU6jdgW8ZCJDagZDZD";
+  "EAADCkm8qQ8EBAIri8j0AMtCSOQpRprexNeivCZCRCsj3qWQ0u9k42sznrVPhoxvcf9WUKlBPmxYlZBRAMD2PkMRIG4lJFE5cjVlv8upgz0ZAw4dZA0hxn40lcyD1rEVXFToBknopP0pjxAIt6tTDAfQQl7xMIV0reUuKtznvPAZDZD";
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -26,45 +26,43 @@ app.get("/webhook", (req, res) => {
   res.send("wrong token");
 });
 
-app.post("/webhook", (req, res) => {
-  //   console.log(req.body.entry);
-  let messaging = req.body.entry[0].messaging;
-  console.log("text message: " + req.body.entry[0].messaging[0].message.text);
-  console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
-
-  console.log(JSON.stringify(req.body.entry[0].messaging[0].sender.id));
-  for (let i = 0; i < messaging.length; i++) {
-    let sender = JSON.stringify(messaging[i].sender.id);
-    if (messaging[i].message && messaging[i].message.text) {
-      let text = messaging[i].message.text;
-      //   sendText(sender, "text echo: " + text.substring(0, 100));
-      console.log("text in for cycle: " + text);
-    }
-  }
-  res.sendStatus(200);
-});
-
 function sendText(sender, text) {
-  let messageData = { text: text };
+  console.log("text: " + text);
+  console.log("sender: " + sender);
   request(
     {
       url: "https://graph.facebook.com/v2.6/me/messages?access_token=" + token,
       method: "POST",
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
       json: {
         messaging_type: "RESPONSE",
         recipient: { id: sender },
-        message: messageData
+        message: { text: text }
       }
     },
     (error, response, body) => {
       if (error) {
         console.log("sending error");
       } else if (response.body.error) {
-        console.log("response body error");
+        console.log(response.body.error);
       }
     }
   );
 }
+
+app.post("/webhook", (req, res) => {
+  let messaging = req.body.entry[0].messaging;
+  //   console.log("text message: " + req.body.entry[0].messaging[0].message.text);
+  //   console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
+  for (let i = 0; i < messaging.length; i++) {
+    let sender = messaging[i].sender.id;
+    if (messaging[i].message && messaging[i].message.text) {
+      let text = messaging[i].message.text;
+      sendText(sender, "text echo: " + text.substring(0, 100));
+    }
+  }
+  res.sendStatus(200);
+});
 
 app.set("port", 3013);
 
