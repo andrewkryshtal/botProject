@@ -1,8 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
 import request from "request";
-const MongoClient = require("mongodb").MongoClient;
-const db = require("./db");
+import { MongoClient } from "mongodb";
+// const db = require("./db");
+import { connect } from "./db";
+import config from "./config";
 
 var app = express();
 let token =
@@ -52,8 +54,7 @@ function sendText(sender, text) {
 
 app.post("/webhook", (req, res) => {
   let messaging = req.body.entry[0].messaging;
-  //   console.log("text message: " + req.body.entry[0].messaging[0].message.text);
-  //   console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
+  console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
   for (let i = 0; i < messaging.length; i++) {
     let sender = messaging[i].sender.id;
     if (messaging[i].message && messaging[i].message.text) {
@@ -66,7 +67,7 @@ app.post("/webhook", (req, res) => {
 
 app.set("port", 3013);
 
-db.connect("mongodb://127.0.0.1:27017/botapi", err => {
+connect(config.database.url, err => {
   if (err) {
     return console.log(err);
   }

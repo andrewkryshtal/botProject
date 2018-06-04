@@ -1,12 +1,9 @@
-import * as MongoClient from "mongodb";
+import { MongoClient } from "mongodb";
 
 var state = {
   db: null
 };
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 var connect = (url, done) => {
   if (state.db) {
     return done();
