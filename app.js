@@ -108,6 +108,7 @@ function getLuisIntent(utterance) {
 
 app.post("/webhook", (req, res) => {
   let messaging = req.body.entry[0].messaging;
+  console.log(typeof req.body);
   // console.log("sender: " + req.body.entry[0].messaging[0].sender.id);
   for (let i = 0; i < messaging.length; i++) {
     let sender = messaging[i].sender.id;
@@ -116,7 +117,7 @@ app.post("/webhook", (req, res) => {
       getLuisIntent(text).then(function(data) {
         var currentDate = new Date();
         console.log(currentDate);
-        console.log(JSON.stringify(data));
+        console.log(JSON.parse(data));
         // sendText(sender, data);
       });
     }
